@@ -510,7 +510,17 @@ def compare_filelists(src_list, dst_list, src_remote, dst_remote):
             info(u"%s: does not exist in one side or the other: src_list=%s, dst_list=%s" % (file, file in src_list, file in dst_list))
             return False
 
-        ## check size first
+        ## check mtime
+        if 'mtime' in cfg.sync_checks:
+            src_mtime = src_list[file]['timestamp'] if src_remote else src_list[file]['mtime']
+            dst_mtime = dst_list[file]['timestamp'] if dst_remote else dst_list[file]['mtime']
+            if src_mtime > dst_mtime:
+                debug(u"xfer: %s (mtime mismatch: src_mtime=%s dst_mtime=%s)" % (file, src_mtime, dst_mtime))
+                attribs_match = False
+
+            return attribs_match
+
+        ## check size
         if 'size' in cfg.sync_checks:
             if 'size' in dst_list[file] and 'size' in src_list[file]:
                 if dst_list[file]['size'] != src_list[file]['size']:
